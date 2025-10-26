@@ -23,7 +23,7 @@ pipeline {
         maven 'Maven' // name of maven in Global Tool Config
       }
       steps {
-        sh 'mvn -B clean package -DskipTests=false'
+        bat 'mvn -B clean package -DskipTests=false'
         archiveArtifacts artifacts: 'target/*.war', fingerprint: true
       }
     }
@@ -31,7 +31,7 @@ pipeline {
     stage('Prepare Docker Context') {
       steps {
         // create a small docker build context that copies the WAR into Tomcat
-        sh '''
+        bat '''
           mkdir -p docker-build
           cp target/*.war docker-build/app.war
           cat > docker-build/Dockerfile <<'DOCK'
@@ -58,7 +58,7 @@ pipeline {
     stage('Push to Docker Hub') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          sh '''
+          bat '''
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
             docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
             docker push ${IMAGE_NAME}:${IMAGE_TAG}
